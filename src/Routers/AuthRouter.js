@@ -63,7 +63,7 @@ AuthRouter.post("/user/login", async (req, res) => {
       sameSite: "None",
       path: "/",
     });
-    res.send({user,ok:true});
+    res.send({ user, ok: true });
   } catch (error) {
     res.send(error.message);
   }
@@ -91,7 +91,7 @@ AuthRouter.post("/user/signup", async (req, res) => {
       sameSite: "None",
       path: "/",
     });
-    res.send({saved_user,ok:true});
+    res.send({ saved_user, ok: true });
   } catch (error) {
     res.send(error.message);
   }
@@ -115,7 +115,7 @@ AuthRouter.post("/admin/login", async (req, res) => {
       sameSite: "None",
       path: "/",
     });
-    res.send({admin,ok:true});
+    res.send({ admin, ok: true });
   } catch (error) {
     console.log(error);
   }
@@ -141,7 +141,7 @@ AuthRouter.post("/admin/signup", async (req, res) => {
       sameSite: "None",
       path: "/",
     });
-    res.send({saved_admin_data,ok:true});
+    res.send({ saved_admin_data, ok: true });
   } catch (error) {
     console.log(error);
   }
@@ -159,5 +159,27 @@ AuthRouter.post("/logout", (req, res) => {
   } catch (err) {
     console.log(error);
   }
+});
+AuthRouter.post("/set-password", async (req, res) => {
+  try {
+    const { token, tempPassword, newPassword } = req.body;
+
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await ShreeForm.findById(decoded.id);
+      if (!user) return res.status(404).json({ msg: "User not found" });
+
+      const isMatch = await bcrypt.compare(tempPassword, user.application_password);
+      if (!isMatch)
+        return res.status(401).json({ msg: "Invalid temporary password" });
+
+      user.final_password = await bcrypt.hash(newPassword, 10);
+      await user.save();
+
+      res.status(200).json({ msg: "Password updated successfully" });
+    } catch (err) {
+      return res.status(400).json({ msg: "Invalid or expired token" });
+    }
+  } catch (err) {}
 });
 module.exports = AuthRouter;

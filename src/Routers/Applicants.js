@@ -47,13 +47,14 @@ ApplicationRouter.post("/applications/:id/status", async (req, res) => {
     await user.save();
     const token = jwt.sign(
       { email: user.email },
-      process.env.JWT_SECRET || "ram",
+      process.env.JWT_SECRET,
       {
         expiresIn: "1h",
       }
     );
 
-    const verificationLink = `http://localhost:3000/verify-password?token=${token}`;
+    const verificationLink = `${process.env.FRONTEND_URL}/verify-password?token=${token}`;
+    console.log(verificationLink);
     await sendEmail(
       user.email,
       "Application Accepted 🎉",
