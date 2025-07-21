@@ -1,5 +1,6 @@
 const { default: mongoose } = require("mongoose");
-const ConnectionString = "mongodb+srv://vibhanshusharma89636:dEikDKUN9JayL0lR@database.ackzc.mongodb.net/po";
+require("dotenv").config();
+const ConnectionString = process.env.CONNECTION_STRING ;
 const DBconnection = async ()=>{
   try{
      await mongoose.connect(ConnectionString);
