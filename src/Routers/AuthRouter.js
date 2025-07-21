@@ -46,6 +46,7 @@ AuthRouter.post("/user/login", async (req, res) => {
   try {
     console.log(" User login");
     const { email, password } = req.body;
+    console.log(email);
     console.log(password);
     const user = await ShreeUser.findOne({ email: email });
 
@@ -160,26 +161,48 @@ AuthRouter.post("/logout", (req, res) => {
     console.log(error);
   }
 });
+
 AuthRouter.post("/set-password", async (req, res) => {
   try {
-    const { token, tempPassword, newPassword } = req.body;
+    const { tempPassword, newPassword, token } = req.body;
 
+    if (!tempPassword || !newPassword || !token) {
+      return res.status(400).json({ msg: "All fields are required" });
+    }
+
+    let decoded;
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user = await ShreeForm.findById(decoded.id);
-      if (!user) return res.status(404).json({ msg: "User not found" });
-
-      const isMatch = await bcrypt.compare(tempPassword, user.application_password);
-      if (!isMatch)
-        return res.status(401).json({ msg: "Invalid temporary password" });
-
-      user.final_password = await bcrypt.hash(newPassword, 10);
-      await user.save();
-
-      res.status(200).json({ msg: "Password updated successfully" });
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
       return res.status(400).json({ msg: "Invalid or expired token" });
     }
-  } catch (err) {}
+
+    const user = await ShreeForm.findOne({ email: decoded.email });
+
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(
+      tempPassword,
+      user.application_password
+    );
+    if (!isMatch) {
+      return res.status(401).json({ msg: "Invalid temporary password" });
+    }
+
+    user.final_password = await bcrypt.hash(newPassword, 10);
+    user.isVerified = true;
+    const updated_data = await user.save();
+
+    return res.status(200).json({
+      msg: "Password updated successfully",
+      updated_data: updated_data,
+    });
+  } catch (err) {
+    console.error("Server error in /set-password:", err);
+    return res.status(500).json({ msg: "Server error" });
+  }
 });
+
 module.exports = AuthRouter;
