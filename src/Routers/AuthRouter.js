@@ -46,7 +46,7 @@ AuthRouter.post("/user/login", async (req, res) => {
   try {
     console.log(" User login");
     const { email, password } = req.body;
-    console.log(email, password);
+    console.log(password);
     const user = await ShreeUser.findOne({ email: email });
 
     if (!user) throw new Error("No user present accord to this information");
