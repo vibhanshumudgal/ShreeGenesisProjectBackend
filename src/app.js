@@ -26,5 +26,5 @@ app.get("/", (req, res) => {
 app.use("/", AuthRouter);
 app.use("/",ApplicationRouter);
 app.listen(port, () => {
-  .log(`Server is running on http://localhost:${port}`);
+  console.log(`Server is running on http://localhost:${port}`);
 });
