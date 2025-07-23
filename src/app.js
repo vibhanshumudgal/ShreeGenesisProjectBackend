@@ -7,6 +7,7 @@ const port = process.env.PORT || 4000;
 const cors = require("cors");
 const DBconnection = require("./helper/dbConnection");
 const ApplicationRouter = require("./Routers/Applicants");
+const upload = require("../middleware/multerjs");
 DBconnection();
 app.use(
   cors({
@@ -17,6 +18,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req, res) => {
   res.send("Welcome user");
@@ -24,5 +26,5 @@ app.get("/", (req, res) => {
 app.use("/", AuthRouter);
 app.use("/",ApplicationRouter);
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  .log(`Server is running on http://localhost:${port}`);
 });

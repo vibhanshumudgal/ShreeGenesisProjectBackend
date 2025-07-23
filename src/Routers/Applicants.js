@@ -9,7 +9,7 @@ const jwt = require("jsonwebtoken");
 const sendEmail = require("../helper/sendEmial");
 
 ApplicationRouter.get("/pendingapplications", async (req, res) => {
-  console.log("application");
+
   try {
     const updated_data = await ShreeForm.find({ status: "pending" });
 
@@ -19,8 +19,7 @@ ApplicationRouter.get("/pendingapplications", async (req, res) => {
   }
 });
 ApplicationRouter.post("/applications/:id/status", async (req, res) => {
-  console.log(req.body);
-  console.log(req.params);
+
   const { id } = req.params;
   const { status } = req.body;
 
@@ -29,8 +28,7 @@ ApplicationRouter.post("/applications/:id/status", async (req, res) => {
   }
 
   try {
-    console.log(id);
-    console.log(status);
+    
     const user = await ShreeForm.findById(id);
     user.status = status;
 
@@ -54,7 +52,7 @@ ApplicationRouter.post("/applications/:id/status", async (req, res) => {
     );
 
     const verificationLink = `${process.env.FRONTEND_URL}/verify-password?token=${token}`;
-    console.log(verificationLink);
+   
     await sendEmail(
       user.email,
       "Application Accepted 🎉",

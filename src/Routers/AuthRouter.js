@@ -5,9 +5,12 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const ShreeForm = require("../model/ShreeForm");
 const ShreeAdmin = require("../model/ShreeAdmin");
+const upload = require("../../middleware/multerjs");
 const secretKey = "kuchbhi";
-AuthRouter.post("/submitform", async (req, res) => {
+
+AuthRouter.post("/submitform", upload.single("photo"), async (req, res) => {
   try {
+    
     const {
       name,
       email,
@@ -18,25 +21,33 @@ AuthRouter.post("/submitform", async (req, res) => {
       phone_number,
       address,
     } = req.body;
-
-    const user = await ShreeForm.findOne({ email: email });
-    if (user) {
-      res.send("Form is alredy sent through this email");
-      return;
+   
+    // Check file was uploaded
+    if (!req.file) {
+      return res.status(400).send("Photo file is required");
     }
+
+    // Duplicate email check
+    const existing = await ShreeForm.findOne({ email });
+    if (existing) {
+      return res.status(400).send("Form already submitted with this email");
+    }
+
+    // Save new user form including photo path
     const new_user = new ShreeForm({
-      name: name,
-      mother_name: mother_name,
-      father_name: father_name,
-      college_name: college_name,
-      branch: branch,
-      phone_number: phone_number,
-      address: address,
-      email: email,
+      name,
+      mother_name,
+      father_name,
+      college_name,
+      branch,
+      phone_number,
+      address,
+      email,
+      photo: req.file.path, // New field
     });
 
     await new_user.save();
-    res.status(200).json("User Form Submit");
+    res.status(200).json("User Form Submitted with Photo");
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -44,18 +55,16 @@ AuthRouter.post("/submitform", async (req, res) => {
 
 AuthRouter.post("/user/login", async (req, res) => {
   try {
-    console.log(" User login");
+  
     const { email, password } = req.body;
-    console.log(email);
-    console.log(password);
+   
     const user = await ShreeUser.findOne({ email: email });
 
     if (!user) throw new Error("No user present accord to this information");
 
     const password_matching = await bcrypt.compare(password, user.password);
 
-    console.log(password_matching);
-    console.log(password_matching);
+    
     if (!password_matching) throw new Error("please ceck the password");
     const token = jwt.sign({ _id: user._id }, secretKey, { expiresIn: "1d" });
     res.cookie("token", token, {
@@ -71,7 +80,7 @@ AuthRouter.post("/user/login", async (req, res) => {
 });
 AuthRouter.post("/user/signup", async (req, res) => {
   try {
-    console.log("User Singup");
+   
     const { name, email, password } = req.body;
 
     const exist_user = await ShreeUser.findOne({ email: email });
@@ -124,7 +133,7 @@ AuthRouter.post("/admin/login", async (req, res) => {
 AuthRouter.post("/admin/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    console.log(`${name} ${email}`);
+   
     const exist_admin = await ShreeAdmin.findOne({ email: email });
     if (exist_admin) throw new Error("Email already exist");
     const admin_data = new ShreeAdmin({

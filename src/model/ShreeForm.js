@@ -9,15 +9,15 @@ const formSchema = new mongoose.Schema({
   college_name: { type: String, required: true, trim: true },
   phone_number: { type: Number, required: true },
   address: { type: String, required: true },
+  photo: { type: String, required: true }, // <-- new field
   status: {
     type: String,
     enum: ["pending", "accepted", "rejected"],
     default: "pending",
   },
-
-  application_password: { type: String ,default:""},
+  application_password: { type: String, default: "" },
   isVerified: { type: Boolean, default: false },
-  final_password: { type: String ,default:""},
+  final_password: { type: String, default: "" },
 });
 
 const ShreeForm = mongoose.model("Form", formSchema);
